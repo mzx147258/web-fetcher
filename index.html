@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>✨ 网页取源 · 孟白NB</title>
+    <title>✨ 网页取源 · 智能获取器</title>
     <style>
         * {
             margin: 0;
@@ -186,6 +186,36 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+        }
+
+        .result-header span {
+            color: #b0d0f0;
+            font-size: 1rem;
+        }
+
+        .copy-btn {
+            background: #1e2f40;
+            border: 1px solid #3b82f6;
+            border-radius: 30px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.9rem;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .copy-btn:hover {
+            background: #2b4058;
+        }
+
         .result-box {
             background: #0b131e;
             border-radius: 24px;
@@ -202,6 +232,7 @@
             font-size: 0.85rem;
             white-space: pre-wrap;
             word-break: break-all;
+            margin: 0;
         }
 
         .result-box .placeholder {
@@ -239,7 +270,7 @@
         </div>
 
         <!-- 显示用户ID（方便管理和复制） -->
-        <div class="user-id" id="user-id-container" style="display: none;">
+        <div class="user-id" id="user-id-container">
             <span class="label">🆔 用户ID</span>
             <span class="value" id="user-id"></span>
         </div>
@@ -256,7 +287,11 @@
             <div class="spinner" id="spinner"></div>
         </div>
 
-        <!-- 源码显示区域 -->
+        <!-- 源码显示区域（带复制按钮） -->
+        <div class="result-header">
+            <span>📄 源码预览</span>
+            <button class="copy-btn" id="copyBtn" style="display: none;">📋 复制源码</button>
+        </div>
         <div class="result-box">
             <pre id="result"><span class="placeholder">源码将显示在这里</span></pre>
         </div>
@@ -279,9 +314,8 @@
             localStorage.setItem('fetcher_userId', userId);
         }
 
-        // 显示用户ID（方便管理员知道）
+        // 显示用户ID
         document.getElementById('user-id').innerText = userId;
-        document.getElementById('user-id-container').style.display = 'flex';
 
         // DOM 元素
         const quotaSpan = document.getElementById('quota');
@@ -290,6 +324,10 @@
         const resultPre = document.getElementById('result');
         const statusText = document.getElementById('statusText');
         const spinner = document.getElementById('spinner');
+        const copyBtn = document.getElementById('copyBtn');
+
+        // 当前抓取到的源码（用于复制）
+        let currentSource = '';
 
         // 更新剩余次数显示
         async function updateQuota() {
@@ -310,6 +348,22 @@
             if (isError) statusText.style.color = '#ffa07a';
             else statusText.style.color = '#b0d0f0';
             spinner.style.display = isLoading ? 'inline-block' : 'none';
+        }
+
+        // 复制源码到剪贴板
+        async function copySource() {
+            if (!currentSource) {
+                alert('没有可复制的源码');
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(currentSource);
+                setStatus('✅ 源码已复制到剪贴板', false);
+                // 短暂提示后恢复
+                setTimeout(() => setStatus('✨ 就绪，输入网址开始抓取'), 2000);
+            } catch (err) {
+                setStatus('❌ 复制失败，请手动复制', false, true);
+            }
         }
 
         // 抓取源码
@@ -351,10 +405,13 @@
                 });
                 const fetchData = await fetchResp.json();
                 if (fetchResp.ok) {
-                    resultPre.innerText = fetchData.source;
+                    currentSource = fetchData.source;
+                    resultPre.innerText = currentSource;
+                    copyBtn.style.display = 'inline-flex';  // 显示复制按钮
                     setStatus('✅ 抓取成功', false);
                 } else {
                     resultPre.innerText = '抓取失败：' + fetchData.error;
+                    copyBtn.style.display = 'none';
                     setStatus('❌ 抓取失败', false, true);
                 }
             } catch (e) {
@@ -368,12 +425,13 @@
         urlInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') handleFetch();
         });
+        copyBtn.addEventListener('click', copySource);
 
         // 初始化
         updateQuota();
 
-        // 可选的轮询更新剩余次数（比如被管理员调整后自动更新）
-        setInterval(updateQuota, 15000); // 每15秒刷新一次
+        // 每15秒刷新剩余次数（管理员调整后自动更新）
+        setInterval(updateQuota, 15000);
     </script>
 </body>
-</html>
+    </html>
