@@ -1,77 +1,379 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>网页取源工具</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>✨ 网页取源 · 智能获取器</title>
     <style>
-        body { font-family: Arial; max-width: 600px; margin: 30px auto; padding: 0 20px; }
-        #quota { font-weight: bold; color: #e67e22; }
-        input, button { padding: 10px; font-size: 16px; width: 100%; box-sizing: border-box; margin: 5px 0; }
-        button { background: #3498db; color: white; border: none; cursor: pointer; }
-        button:disabled { background: #ccc; }
-        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; border: 1px solid #ddd; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(ellipse at 30% 40%, #1a2635, #0d1117);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .glass-card {
+            width: 100%;
+            max-width: 700px;
+            background: rgba(20, 28, 40, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(74, 144, 226, 0.25);
+            border-radius: 40px;
+            padding: 2rem 1.8rem;
+            box-shadow: 0 30px 50px -20px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.02) inset;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .title h1 {
+            font-size: 1.9rem;
+            font-weight: 600;
+            background: linear-gradient(145deg, #b0d4ff, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .quota-badge {
+            background: rgba(0, 200, 255, 0.12);
+            border: 1px solid #2f8cff;
+            border-radius: 60px;
+            padding: 0.5rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #b5e4ff;
+            box-shadow: 0 0 15px #2f8cff33;
+            backdrop-filter: blur(4px);
+            white-space: nowrap;
+        }
+
+        .quota-badge span {
+            font-weight: 700;
+            color: white;
+            font-size: 1.5rem;
+            margin-left: 8px;
+        }
+
+        .user-id {
+            background: #1e2a3a;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            color: #98b9e0;
+            border: 1px dashed #3f5e8a;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+            word-break: break-all;
+        }
+
+        .user-id .label {
+            color: #6d8fc6;
+        }
+
+        .user-id .value {
+            font-family: monospace;
+            background: #010a13;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            color: #aad0ff;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .input-group input {
+            flex: 1;
+            min-width: 240px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid #334b68;
+            border-radius: 50px;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            color: white;
+            outline: none;
+            transition: all 0.2s;
+            backdrop-filter: blur(8px);
+        }
+
+        .input-group input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px #1e3a8a80;
+        }
+
+        .input-group input::placeholder {
+            color: #7f9bc0;
+        }
+
+        .input-group button {
+            background: linear-gradient(145deg, #1e4f8a, #0e2b4a);
+            border: 1px solid #3b82f6;
+            border-radius: 50px;
+            padding: 0 2.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 8px 20px #0a1c33;
+            white-space: nowrap;
+            backdrop-filter: blur(4px);
+        }
+
+        .input-group button:hover {
+            background: linear-gradient(145deg, #256bb0, #123a60);
+            border-color: #60a5fa;
+            transform: scale(1.02);
+        }
+
+        .input-group button:active {
+            transform: scale(0.98);
+        }
+
+        .status-area {
+            background: #0f1a24c0;
+            border-radius: 30px;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 6px solid #3b82f6;
+            backdrop-filter: blur(4px);
+            font-size: 0.95rem;
+            color: #b0d0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #2d405b;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .result-box {
+            background: #0b131e;
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid #2a3f60;
+            box-shadow: inset 0 0 20px #00000060;
+            max-height: 500px;
+            overflow: auto;
+        }
+
+        .result-box pre {
+            color: #c0d4f0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .result-box .placeholder {
+            color: #5a7290;
+            text-align: center;
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        .footer-note {
+            margin-top: 1.5rem;
+            text-align: center;
+            color: #4e6580;
+            font-size: 0.8rem;
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 500px) {
+            .glass-card { padding: 1.5rem; }
+            .header { flex-direction: column; align-items: stretch; }
+            .quota-badge { align-self: flex-start; }
+            .input-group button { width: 100%; padding: 1rem; }
+        }
     </style>
 </head>
 <body>
-    <h2>🔍 网页源码获取器</h2>
-    <p>剩余次数: <span id="quota">加载中...</span></p>
-    <input type="url" id="urlInput" placeholder="输入网址 (例如 https://example.com)" />
-    <button id="fetchBtn">获取源码</button>
-    <pre id="result">源码将显示在这里</pre>
+    <div class="glass-card">
+        <div class="header">
+            <div class="title">
+                <h1>🔍 网页取源</h1>
+            </div>
+            <div class="quota-badge">
+                剩余 <span id="quota">--</span> 次
+            </div>
+        </div>
+
+        <!-- 显示用户ID（方便管理和复制） -->
+        <div class="user-id" id="user-id-container" style="display: none;">
+            <span class="label">🆔 用户ID</span>
+            <span class="value" id="user-id"></span>
+        </div>
+
+        <!-- 输入网址和获取按钮 -->
+        <div class="input-group">
+            <input type="url" id="urlInput" placeholder="输入网址，例如 https://example.com" autocomplete="off">
+            <button id="fetchBtn">获取源码</button>
+        </div>
+
+        <!-- 状态栏（显示加载/消息） -->
+        <div class="status-area" id="status">
+            <span id="statusText">✨ 就绪，输入网址开始抓取</span>
+            <div class="spinner" id="spinner"></div>
+        </div>
+
+        <!-- 源码显示区域 -->
+        <div class="result-box">
+            <pre id="result"><span class="placeholder">源码将显示在这里</span></pre>
+        </div>
+
+        <div class="footer-note">
+            ⚡ 每次抓取消耗 1 次机会 · 剩余次数由管理员调整
+        </div>
+    </div>
 
     <script>
-        // 配置后端 API 地址（替换为你的 bore 地址）
-        const API_BASE = 'http://bore.pub:26054';  // 注意替换端口！
+        // ================= 配置 =================
+        const API_BASE = 'http://bore.pub:52766';  // ⚠️ 请替换为你的 bore 地址和端口
 
-        // 获取或生成用户 ID
+        // ========================================
+
+        // 获取或生成用户ID
         let userId = localStorage.getItem('fetcher_userId');
         if (!userId) {
             userId = 'user_' + Math.random().toString(36).substr(2, 9);
             localStorage.setItem('fetcher_userId', userId);
         }
 
-        // 获取剩余次数
-        async function fetchQuota() {
-            const resp = await fetch(`${API_BASE}/api/quota?user_id=${userId}`);
-            const data = await resp.json();
-            document.getElementById('quota').innerText = data.remaining;
+        // 显示用户ID（方便管理员知道）
+        document.getElementById('user-id').innerText = userId;
+        document.getElementById('user-id-container').style.display = 'flex';
+
+        // DOM 元素
+        const quotaSpan = document.getElementById('quota');
+        const urlInput = document.getElementById('urlInput');
+        const fetchBtn = document.getElementById('fetchBtn');
+        const resultPre = document.getElementById('result');
+        const statusText = document.getElementById('statusText');
+        const spinner = document.getElementById('spinner');
+
+        // 更新剩余次数显示
+        async function updateQuota() {
+            try {
+                const resp = await fetch(`${API_BASE}/api/quota?user_id=${userId}`);
+                if (!resp.ok) throw new Error('获取次数失败');
+                const data = await resp.json();
+                quotaSpan.innerText = data.remaining;
+            } catch (e) {
+                statusText.innerText = '❌ 无法连接后端，请检查 bore 地址';
+                quotaSpan.innerText = 'ERR';
+            }
         }
-        fetchQuota();
+
+        // 设置状态（普通/加载/错误）
+        function setStatus(text, isLoading = false, isError = false) {
+            statusText.innerText = text;
+            if (isError) statusText.style.color = '#ffa07a';
+            else statusText.style.color = '#b0d0f0';
+            spinner.style.display = isLoading ? 'inline-block' : 'none';
+        }
 
         // 抓取源码
-        document.getElementById('fetchBtn').onclick = async function() {
-            const url = document.getElementById('urlInput').value.trim();
-            if (!url) return alert('请输入网址');
-
-            // 先消耗次数
-            const useResp = await fetch(`${API_BASE}/api/use`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: userId })
-            });
-            const useData = await useResp.json();
-            if (!useResp.ok) {
-                alert('次数不足或错误：' + (useData.error || ''));
+        async function handleFetch() {
+            const url = urlInput.value.trim();
+            if (!url) {
+                setStatus('请输入网址', false, true);
                 return;
             }
-            document.getElementById('quota').innerText = useData.remaining;
-
-            // 再抓取网页
-            document.getElementById('result').innerText = '正在抓取...';
-            const fetchResp = await fetch(`${API_BASE}/api/fetch`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: userId, url: url })
-            });
-            const fetchData = await fetchResp.json();
-            if (fetchResp.ok) {
-                document.getElementById('result').innerText = fetchData.source;
-            } else {
-                document.getElementById('result').innerText = '抓取失败：' + fetchData.error;
-                // 失败可以尝试回退次数？本示例不回退，需要的话可以加逻辑
+            // 简单URL验证
+            try {
+                new URL(url);
+            } catch {
+                setStatus('❌ 网址格式不正确（需要 http:// 或 https://）', false, true);
+                return;
             }
-        };
+
+            setStatus('⏳ 正在消耗次数...', true);
+            try {
+                // 1. 先扣次数
+                const useResp = await fetch(`${API_BASE}/api/use`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const useData = await useResp.json();
+                if (!useResp.ok) {
+                    setStatus(`❌ 次数不足或错误：${useData.error}`, false, true);
+                    return;
+                }
+                quotaSpan.innerText = useData.remaining; // 更新剩余次数
+
+                // 2. 抓取网页
+                setStatus('🌐 正在抓取网页...', true);
+                const fetchResp = await fetch(`${API_BASE}/api/fetch`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, url: url })
+                });
+                const fetchData = await fetchResp.json();
+                if (fetchResp.ok) {
+                    resultPre.innerText = fetchData.source;
+                    setStatus('✅ 抓取成功', false);
+                } else {
+                    resultPre.innerText = '抓取失败：' + fetchData.error;
+                    setStatus('❌ 抓取失败', false, true);
+                }
+            } catch (e) {
+                setStatus('❌ 网络错误，请检查后端或 bore', false, true);
+                console.error(e);
+            }
+        }
+
+        // 绑定事件
+        fetchBtn.addEventListener('click', handleFetch);
+        urlInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleFetch();
+        });
+
+        // 初始化
+        updateQuota();
+
+        // 可选的轮询更新剩余次数（比如被管理员调整后自动更新）
+        setInterval(updateQuota, 15000); // 每15秒刷新一次
     </script>
 </body>
 </html>
