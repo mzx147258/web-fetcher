@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网页取源工具</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 30px auto; padding: 0 20px; }
+        #quota { font-weight: bold; color: #e67e22; }
+        input, button { padding: 10px; font-size: 16px; width: 100%; box-sizing: border-box; margin: 5px 0; }
+        button { background: #3498db; color: white; border: none; cursor: pointer; }
+        button:disabled { background: #ccc; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h2>🔍 网页源码获取器</h2>
+    <p>剩余次数: <span id="quota">加载中...</span></p>
+    <input type="url" id="urlInput" placeholder="输入网址 (例如 https://example.com)" />
+    <button id="fetchBtn">获取源码</button>
+    <pre id="result">源码将显示在这里</pre>
+
+    <script>
+        // 配置后端 API 地址（替换为你的 bore 地址）
+        const API_BASE = 'http://bore.pub:12345';  // 注意替换端口！
+
+        // 获取或生成用户 ID
+        let userId = localStorage.getItem('fetcher_userId');
+        if (!userId) {
+            userId = 'user_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('fetcher_userId', userId);
+        }
+
+        // 获取剩余次数
+        async function fetchQuota() {
+            const resp = await fetch(`${API_BASE}/api/quota?user_id=${userId}`);
+            const data = await resp.json();
+            document.getElementById('quota').innerText = data.remaining;
+        }
+        fetchQuota();
+
+        // 抓取源码
+        document.getElementById('fetchBtn').onclick = async function() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) return alert('请输入网址');
+
+            // 先消耗次数
+            const useResp = await fetch(`${API_BASE}/api/use`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId })
+            });
+            const useData = await useResp.json();
+            if (!useResp.ok) {
+                alert('次数不足或错误：' + (useData.error || ''));
+                return;
+            }
+            document.getElementById('quota').innerText = useData.remaining;
+
+            // 再抓取网页
+            document.getElementById('result').innerText = '正在抓取...';
+            const fetchResp = await fetch(`${API_BASE}/api/fetch`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, url: url })
+            });
+            const fetchData = await fetchResp.json();
+            if (fetchResp.ok) {
+                document.getElementById('result').innerText = fetchData.source;
+            } else {
+                document.getElementById('result').innerText = '抓取失败：' + fetchData.error;
+                // 失败可以尝试回退次数？本示例不回退，需要的话可以加逻辑
+            }
+        };
+    </script>
+</body>
+</html>
