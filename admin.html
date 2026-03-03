@@ -5,31 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理后台</title>
     <style>
-        body { font-family: Arial; max-width: 500px; margin: 50px auto; padding: 0 20px; }
-        input, button { padding: 10px; font-size: 16px; width: 100%; box-sizing: border-box; margin: 5px 0; }
+        body { font-family: Arial; max-width: 600px; margin: 20px auto; padding: 0 20px; }
+        input, button, textarea { padding: 10px; font-size: 16px; width: 100%; box-sizing: border-box; margin: 5px 0; }
         button { background: #2ecc71; color: white; border: none; cursor: pointer; }
+        .section { border: 1px solid #ddd; padding: 15px; margin: 20px 0; border-radius: 8px; }
+        .banned-item { background: #f9f9f9; padding: 10px; margin: 5px 0; border-left: 4px solid #e74c3c; }
+        .unban-btn { background: #e74c3c; width: auto; padding: 5px 10px; margin-left: 10px; }
         #msg { margin-top: 10px; color: #27ae60; }
     </style>
 </head>
 <body>
-    <h2>🔐 管理员增加次数</h2>
-    <input type="password" id="pwd" placeholder="密码" />
-    <input type="text" id="targetUser" placeholder="用户ID" />
-    <input type="number" id="addNum" placeholder="增加次数" value="10" />
-    <button id="addBtn">增加</button>
+    <h2>🔐 管理后台</h2>
+    
+    <div class="section">
+        <h3>调整用户次数（可正可负）</h3>
+        <input type="password" id="pwd" placeholder="密码" />
+        <input type="text" id="targetUser" placeholder="用户ID" />
+        <input type="number" id="adjustNum" placeholder="增加次数（负数表示减少）" value="10" />
+        <button id="adjustBtn">执行调整</button>
+    </div>
+
+    <div class="section">
+        <h3>封禁IP</h3>
+        <input type="text" id="banIp" placeholder="IP地址（例如 192.168.1.100）" />
+        <input type="text" id="banReason" placeholder="封禁原因（可选）" />
+        <button id="banBtn">封禁该IP</button>
+    </div>
+
+    <div class="section">
+        <h3>已封禁IP列表</h3>
+        <input type="password" id="listPwd" placeholder="密码" />
+        <button id="refreshListBtn">刷新列表</button>
+        <div id="bannedList"></div>
+    </div>
+
     <p id="msg"></p>
 
     <script>
-        const API_BASE = 'http://bore.pub:26054';  // 同样替换为你的 bore 地址
-        const ADMIN_PASSWORD = 'admin123';  // 与后端密码一致
+        // 修改为你的 bore 地址和端口
+        const API_BASE = 'http://bore.pub:52766';  // 注意替换成当前端口！
+        const ADMIN_PASSWORD = 'admin123';         // 和后端一致
 
-        document.getElementById('addBtn').onclick = async function() {
+        // 显示消息
+        function showMsg(text, isError = false) {
+            const msg = document.getElementById('msg');
+            msg.innerText = text;
+            msg.style.color = isError ? '#e74c3c' : '#27ae60';
+        }
+
+        // 调整次数（增加/减少）
+        document.getElementById('adjustBtn').onclick = async function() {
             const pwd = document.getElementById('pwd').value;
             const userId = document.getElementById('targetUser').value.trim();
-            const increment = parseInt(document.getElementById('addNum').value) || 0;
+            const increment = parseInt(document.getElementById('adjustNum').value) || 0;
 
-            if (!userId || increment <= 0) {
-                alert('请输入有效信息');
+            if (!userId) {
+                showMsg('请输入用户ID', true);
                 return;
             }
 
@@ -44,11 +75,99 @@
             });
             const data = await resp.json();
             if (resp.ok) {
-                document.getElementById('msg').innerText = `✅ 增加成功，当前剩余 ${data.remaining} 次`;
+                showMsg(`✅ 调整成功，当前剩余 ${data.remaining} 次`);
             } else {
-                document.getElementById('msg').innerText = '❌ 失败：' + data.error;
+                showMsg(`❌ 失败：${data.error}`, true);
             }
         };
+
+        // 封禁IP
+        document.getElementById('banBtn').onclick = async function() {
+            const pwd = document.getElementById('pwd').value;
+            const ip = document.getElementById('banIp').value.trim();
+            const reason = document.getElementById('banReason').value.trim();
+
+            if (!ip) {
+                showMsg('请输入IP地址', true);
+                return;
+            }
+
+            const resp = await fetch(`${API_BASE}/api/admin/ban`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    password: pwd,
+                    ip: ip,
+                    action: 'ban',
+                    reason: reason
+                })
+            });
+            const data = await resp.json();
+            if (resp.ok) {
+                showMsg(`✅ ${data.message}`);
+                document.getElementById('banIp').value = '';
+                document.getElementById('banReason').value = '';
+                // 自动刷新列表
+                loadBannedList();
+            } else {
+                showMsg(`❌ 失败：${data.error}`, true);
+            }
+        };
+
+        // 加载封禁列表
+        async function loadBannedList() {
+            const pwd = document.getElementById('listPwd').value;
+            if (!pwd) {
+                showMsg('请输入密码查看列表', true);
+                return;
+            }
+            const resp = await fetch(`${API_BASE}/api/admin/banned_list?password=${encodeURIComponent(pwd)}`);
+            const data = await resp.json();
+            const listDiv = document.getElementById('bannedList');
+            if (!resp.ok) {
+                listDiv.innerHTML = `<p style="color:red">${data.error}</p>`;
+                return;
+            }
+            if (data.length === 0) {
+                listDiv.innerHTML = '<p>暂无封禁IP</p>';
+                return;
+            }
+            let html = '';
+            data.forEach(item => {
+                html += `
+                    <div class="banned-item">
+                        <strong>${item.ip}</strong><br>
+                        原因：${item.reason || '无'}<br>
+                        时间：${item.created_at}<br>
+                        <button class="unban-btn" onclick="unbanIP('${item.ip}')">解封</button>
+                    </div>
+                `;
+            });
+            listDiv.innerHTML = html;
+        }
+
+        // 解封IP
+        window.unbanIP = async function(ip) {
+            const pwd = document.getElementById('listPwd').value;
+            const resp = await fetch(`${API_BASE}/api/admin/ban`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    password: pwd,
+                    ip: ip,
+                    action: 'unban'
+                })
+            });
+            const data = await resp.json();
+            if (resp.ok) {
+                showMsg(`✅ ${data.message}`);
+                loadBannedList();
+            } else {
+                showMsg(`❌ 解封失败：${data.error}`, true);
+            }
+        };
+
+        document.getElementById('refreshListBtn').onclick = loadBannedList;
     </script>
 </body>
 </html>
