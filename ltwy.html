@@ -1,39 +1,39 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>简易聊天系统</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
-body{background:#f5f5f5;padding:10px}
-.page{max-width:500px;margin:0 auto;background:white;border-radius:10px;padding:20px;box-shadow:0 0 5px #0002}
-.title{text-align:center;margin-bottom:20px;font-size:20px}
+超文本标记语言
+>"密码"！doctype！doctype< 朗=>"zh-CN"
+>头<
+元< 字符集=>"UTF-8"
+元< 姓名="视口" 内容=>"宽度=设备宽度，初始比例=1.0"
+>标题<简易聊天系统>标题</
+>风格<
+*{箱体尺寸：边框框；边缘：0；填充：0；字体系列：system-ui}
+身体{背景：#f5f5f5；填充：10px}
+.页{最大宽度：500px；边缘：0自动；背景：白色的；边界半径：10PX；填充：20px；箱形阴影：005px#0002}
+。标题{text-align:center；bargin-bottom:20px；font-size:20px}
 .input-group{margin-bottom:15px}
-.input-group input{width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;outline:none}
-.btn{width:100%;padding:12px;background:#007bff;color:white;border:none;border-radius:6px;margin-top:5px}
-.link-btn{background:none;border:none;color:#007bff;width:100%;margin-top:10px}
-#chat-page{display:none}
-#msg-box{height:60vh;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:8px}
-.msg{padding:8px 12px;border-radius:15px;max-width:70%;word-break:break-word}
-.me{align-self:flex-end;background:#007bff;color:white}
-.other{align-self:flex-start;background:#e9ecef;color:#222}
-#input-area{display:flex;padding:10px;border-top:1px solid #ddd}
-#text{flex:1;padding:10px;border:1px solid #ddd;border-radius:5px 0 0 5px;outline:none}
-#send{padding:10px 15px;background:#007bff;color:white;border:none;border-radius:0 5px 5px 0}
-.user-info{text-align:center;margin-bottom:10px;color:#666}
-</style>
-</head>
-<body>
+.input-group input{width:100%；padding:12px；border:1px solid#ddd；border-radius:6px；outline:none}
+。BTN{宽度：100%；填充：12px；背景：#007bff；颜色：白色；边框：无；边框半径：6px；f25Margin-top}：5px{\f6
+.link-btn{背景：无；边框：无；颜色：#007bff；宽度：100%；上边距：10px}
+#聊天页面{显示：无}
+#msg-box{height:60vh；overflow-y:auto；padding:15px；display:flex；flex-direction:column；gap:8px}
+。消息{填充：8px12px；边框半径：15px；最大宽度：70%；WORD-BREAK:break-word}
+.me{align-self:flex-end；背景：#007bff；颜色：白色}
+。其他{align-self:flex-start；背景：#e9ecef；颜色：#222}
+#input-area{display:flex；padding:10px；border-top:1px solid#ddd}
+#text{flex:1；填充：10px；边框：1px实心#ddd；边框半径：5px005px；轮廓：无}
+#send{padding:10px15px；背景：#007bff；颜色：白色；边框：无；边框半径：05px5px0}
+。用户信息{text-align：居中；驳船底：10px；颜色：#666}
+>
+</头>
+>身体<
 
-<!-- 登录页 -->
-<div id="login-page" class="page">
-  <div class="title">登录</div>
-  <div class="input-group">
-    <input type="text" id="login-user" placeholder="用户名">
-  </div>
-  <div class="input-group">
-    <input type="password" id="login-pwd" placeholder="密码">
+<! -- 登录页 >>
+div< 身份标识="登录页" 班级=>"页面"
+div< 班级=>"标题"登录>div</
+  div< 班级=>"输入组"
+输入< 类型="文本" 身份标识="登录用户" 占位符=>"用户名"
+>div</
+  div< 班级=>"输入组"
+输入< 类型="密码" 身份标识="登录密码" 占位符=>"密码"
   </div>
   <button class="btn" onclick="login()">登录</button>
   <button class="link-btn" onclick="showReg()">去注册</button>
